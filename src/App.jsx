@@ -30,12 +30,14 @@ class App extends Component {
         symbol: null,
         tradableAfter: null,
         totalSupply: null,
+        tokenSeller: null,
       },
       saleInfo: {
         saleStartTime: null,
         saleEndTime: null,
         salePrice: null,
         tokensLeft: null,
+        balance: null,
       },
       investEth: "",
     }
@@ -84,6 +86,7 @@ class App extends Component {
     const salePrice = await saleInstance.salePrice()
     const tokensLeft = await tokenInstance
       .allowance(tokenSeller, saleInstance.address)
+    const balance = await this.state.web3.eth.getBalancePromise(saleInstance.address)
     this.setState({
       tokenInstance,
       saleInstance,
@@ -93,12 +96,14 @@ class App extends Component {
         symbol,
         tradableAfter,
         totalSupply,
+        tokenSeller,
       },
       saleInfo: {
         saleStartTime,
         saleEndTime,
         salePrice,
         tokensLeft,
+        balance,
       }
     })
   }
@@ -113,7 +118,16 @@ class App extends Component {
       // success
       alert("success! you bought the tokens!")
       console.log(tx.logs[0].args)
+    } else {
+      alert("failed!")
     }
+  }
+
+  handleCashoutClick = async () => {
+    const tx = await this.state.saleInstance.withdraw({
+      from: this.state.account,
+    })
+    console.log(tx)
   }
 
   render() {
@@ -175,6 +189,14 @@ class App extends Component {
                   </p>
                   <button onClick={this.handleBuyClick}>buy the ico</button>
                 </div>
+              </div>
+            ) : null}
+            {this.state.account && this.state.account === this.state.tokenInfo.tokenSeller ? (
+              <div className="pure-u-1-1">
+                <h1>Seller controls</h1>
+                <p>Balance of the tokensale contract: {this.state.web3
+                  .fromWei(this.state.saleInfo.balance).toString()} ETH</p>
+                <button onClick={this.handleCashoutClick}>Cash out!</button>
               </div>
             ) : null}
           </div>

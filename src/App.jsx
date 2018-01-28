@@ -106,10 +106,10 @@ class App extends Component {
   handleBuyClick = async () => {
     const tx = await this.state.saleInstance.sendTransaction({
       from: this.state.account,
-      value: this.state.web3.toWei(1),
+      value: this.state.web3.toWei(this.state.investEth),
     })
     console.log(tx)
-    if (tx.logs[0].event === "TokensSold") {
+    if (tx.logs[0].event === "TokenSold") {
       // success
       alert("success! you bought the tokens!")
       console.log(tx.logs[0].args)

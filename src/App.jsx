@@ -171,7 +171,8 @@ class App extends Component {
                 <p>End Time: {this.state.saleInfo.saleEndTime.toLocaleString()}</p>
                 <p>Sale Price: {new bn(1)
                   .dividedBy(this.state.web3.fromWei(this.state.saleInfo.salePrice))
-                  .dividedBy(Math.pow(10, this.state.tokenInfo.decimals)).toString()} BST / ETH</p>
+                  .dividedBy(Math.pow(10, this.state.tokenInfo.decimals)).toString()}
+                  { `${this.state.tokenInfo.symbol} / ETH`}</p>
                 <h2>buy the shit now and get rich</h2>
                 <div>
                   <label>
@@ -185,7 +186,8 @@ class App extends Component {
                       :
                       `This will get you ${new bn(this.state.web3.toWei(this.state.investEth))
                         .dividedBy(this.state.saleInfo.salePrice)
-                        .dividedBy(Math.pow(10, this.state.tokenInfo.decimals))} BST`}
+                        .dividedBy(Math.pow(10, this.state.tokenInfo.decimals))}
+                        ${this.state.tokenInfo.symbol}`}
                   </p>
                   <button onClick={this.handleBuyClick}>buy the ico</button>
                 </div>

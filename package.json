@@ -53,6 +53,8 @@
     "dotenv": "^2.0.0",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
+    "semantic-ui-css": "^2.2.14",
+    "semantic-ui-react": "^0.77.2",
     "web3": "^0.20.4"
   },
   "scripts": {

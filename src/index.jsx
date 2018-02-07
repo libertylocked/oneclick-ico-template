@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import HomepageLayout from "./HomepageLayout";
+import App from "./App";
+// import HomepageLayout from "./HomepageLayout";
 
-ReactDOM.render(<HomepageLayout />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('root'));

@@ -5,9 +5,11 @@ import {
   Grid,
   Header,
   Modal, Progress,
+  Form, Checkbox,
   Segment,
 } from 'semantic-ui-react'
 import Countdown from "react-countdown-now"
+import FontAwesome from "react-fontawesome"
 import Bluebird from "bluebird"
 import bn from "bignumber.js"
 import getWeb3 from "./utils/getWeb3"
@@ -66,7 +68,7 @@ class App extends Component {
         tokensLeft: null,
         balance: null,
       },
-      investEth: "",
+      investEth: 0,
     }
   }
 
@@ -131,7 +133,7 @@ class App extends Component {
         salePrice,
         tokensLeft,
         balance,
-      }
+      },
     })
   }
 
@@ -155,6 +157,12 @@ class App extends Component {
       from: this.state.account,
     })
     console.log(tx)
+    alert(tx.receipt.transactionHash)
+  }
+
+  handleInvestEthChange = (e) => {
+    const i = parseInt(e.target.value, 10)
+    this.setState({ investEth: i })
   }
 
   render() {
@@ -227,11 +235,25 @@ class App extends Component {
             } size='small'>
               <Modal.Header>Buy Token</Modal.Header>
               <Modal.Content>
-                <p>Form</p>
+                {this.state.saleInstance ?
+                  <Form>
+                    <Form.Field>
+                      <label>Contribution Amount (ETH)</label>
+                      <input placeholder='0' type='number' min='0' onChange={this.handleInvestEthChange}
+                        value={this.setState.investEth} />
+                      <p>
+                        {`This will get you ${new bn(this.state.web3.toWei(this.state.investEth))
+                          .dividedBy(this.state.saleInfo.salePrice)
+                          .dividedBy(Math.pow(10, this.state.tokenInfo.decimals))}
+                         ${this.state.tokenInfo.symbol}`}
+                      </p>
+                    </Form.Field>
+                    <Form.Field>
+                      <Checkbox label='I agree to the Terms and Conditions' />
+                    </Form.Field>
+                    <Button icon='money' content='Contribute' onClick={this.handleBuyClick} />
+                  </Form> : null}
               </Modal.Content>
-              <Modal.Actions>
-                <Button icon='check' content='All Done' />
-              </Modal.Actions>
             </Modal>
           </Grid>
         </Segment>
@@ -272,203 +294,68 @@ class App extends Component {
             </Grid.Row>
           </Grid>
         </Segment>
+        <Segment style={{ padding: '8em 0em' }} vertical>
+          <Grid container stackable verticalAlign='middle'>
+            <Grid.Row>
+              <Grid.Column width={3} textAlign='right' verticalAlign='top'>
+                <Header as='h2' style={{ fontSize: '4em' }}>
+                  <FontAwesome name='warning'
+                    style={{ color: 'rgba(255, 140, 0)' }}
+                  />
+                </Header>
+              </Grid.Column>
+              <Grid.Column width={3} textAlign='left' verticalAlign='top'>
+                <Header as='h2' style={{ fontSize: '2em' }}>
+                  Please be aware of the following
+                </Header>
+              </Grid.Column>
+              <Grid.Column width={8}>
+                <div style={{ fontSize: '1.33em' }}>
+                  <p>
+                    NO U.S. OR CHINESE PURCHASERS - TOKENS ARE NOT BEING OFFERED OR DISTRIBUTED TO U.S. PERSONS OR CHINESE PERSONS.
+                  </p>
+                  <p>
+                    PURCHASE OF TOKENS ARE NON-REFUNDABLE AND PURCHASES CANNOT BE CANCELLED.
+                  </p>
+                  <p>
+                    TOKENS MAY HAVE NO VALUE. YOU MAY LOSE ALL AMOUNTS PAID.
+                  </p>
+                  <p>
+                    PLEASE READ THE ENTIRE TOKEN PURCHASE AGREEMENT AND THE TERMS OF USE OF THIS WEBSITE CAREFULLY AND IN THEIR ENTIRETY PRIOR TO SENDING ETH AND PURCHASING TOKENS.
+                  </p>
+                </div>
+              </Grid.Column>
+              <Grid.Column width={2}></Grid.Column>
+            </Grid.Row>
+          </Grid>
+        </Segment>
+        <Segment style={{ padding: '4em 0em' }} vertical>
+          <Grid container stackable verticalAlign='middle'>
+            <Grid.Row>
+              <Grid.Column>
+                <Header as='h3' style={{ fontSize: '1.33em' }}>The Ethereum address for the token distribution is</Header>
+                <p style={{ fontSize: '1em' }}>
+                  {this.state.saleInstance ? this.state.saleInstance.address : "..."}
+                </p>
+                <Header as='h3' style={{ fontSize: '1.33em' }}>The ERC20 token address is</Header>
+                <p style={{ fontSize: '1em' }}>
+                  {this.state.tokenInstance ? this.state.tokenInstance.address : "..."}
+                </p>
+              </Grid.Column>
+            </Grid.Row>
+          </Grid>
+        </Segment>
+        {this.state.account && this.state.account === this.state.tokenInfo.tokenSeller ? (
+          <Segment style={{ padding: '0em' }} vertical>
+            <h1>Seller controls</h1>
+            <p>Balance of the tokensale contract: {this.state.web3
+              .fromWei(this.state.saleInfo.balance).toString()} ETH</p>
+            <button onClick={this.handleCashoutClick}>Cash out!</button>
+          </Segment>
+        ) : null}
       </div>
     )
   }
 }
-
-// class App extends Component {
-//   constructor(props) {
-//     super(props)
-
-//     this.state = {
-//       web3: null,
-//       account: null,
-//       networkID: null,
-//       saleInstance: null,
-//       tokenInstance: null,
-//       tokenInfo: {
-//         name: null,
-//         decimals: null,
-//         symbol: null,
-//         tradableAfter: null,
-//         totalSupply: null,
-//         tokenSeller: null,
-//       },
-//       saleInfo: {
-//         saleStartTime: null,
-//         saleEndTime: null,
-//         salePrice: null,
-//         tokensLeft: null,
-//         balance: null,
-//       },
-//       investEth: "",
-//     }
-//   }
-
-//   componentWillMount = async () => {
-//     let web3, networkID, account
-//     try {
-//       web3 = await getWeb3()
-//       Bluebird.promisifyAll(web3.eth, { suffix: "Promise" })
-//       Bluebird.promisifyAll(web3.version, { suffix: "Promise" })
-//       networkID = await web3.version.getNetworkPromise()
-//       account = (await web3.eth.getAccountsPromise())[0]
-//     } catch (err) {
-//       console.error(err)
-//       alert("cannot load web3! do you have metamask running?")
-//       return
-//     }
-
-//     this.setState({
-//       web3,
-//       networkID,
-//       account
-//     })
-
-//     await this.instantiateContract()
-//   }
-
-//   instantiateContract = async () => {
-//     const Tokensale = TruffleContract(BasicTokensaleArtifact)
-//     Tokensale.setProvider(this.state.web3.currentProvider)
-//     const saleInstance = Tokensale.at(SaleAddr)
-//     const Token = TruffleContract(ICOableTokenArtifact)
-//     Token.setProvider(this.state.web3.currentProvider)
-//     const tokenInstance = Token.at(TokenAddr)
-//     // get info about token
-//     const name = await tokenInstance.name()
-//     const decimals = await tokenInstance.decimals()
-//     const symbol = await tokenInstance.symbol()
-//     const tradableAfter = new Date((await tokenInstance.tradableAfter()) * 1000)
-//     const totalSupply = await tokenInstance.totalSupply()
-//     const tokenSeller = await tokenInstance.tokenSeller()
-//     // get info about tokensale
-//     const saleStartTime = new Date((await saleInstance.saleStartTime()) * 1000)
-//     const saleEndTime = new Date((await saleInstance.saleEndTime()) * 1000)
-//     const salePrice = await saleInstance.salePrice()
-//     const tokensLeft = await tokenInstance
-//       .allowance(tokenSeller, saleInstance.address)
-//     const balance = await this.state.web3.eth.getBalancePromise(saleInstance.address)
-//     this.setState({
-//       tokenInstance,
-//       saleInstance,
-//       tokenInfo: {
-//         name,
-//         decimals,
-//         symbol,
-//         tradableAfter,
-//         totalSupply,
-//         tokenSeller,
-//       },
-//       saleInfo: {
-//         saleStartTime,
-//         saleEndTime,
-//         salePrice,
-//         tokensLeft,
-//         balance,
-//       }
-//     })
-//   }
-
-//   handleBuyClick = async () => {
-//     const tx = await this.state.saleInstance.sendTransaction({
-//       from: this.state.account,
-//       value: this.state.web3.toWei(this.state.investEth),
-//     })
-//     console.log(tx)
-//     if (tx.logs[0].event === "TokenSold") {
-//       // success
-//       alert("success! you bought the tokens!")
-//       console.log(tx.logs[0].args)
-//     } else {
-//       alert("failed!")
-//     }
-//   }
-
-//   handleCashoutClick = async () => {
-//     const tx = await this.state.saleInstance.withdraw({
-//       from: this.state.account,
-//     })
-//     console.log(tx)
-//   }
-
-//   render() {
-//     return (
-//       <div className="App">
-//         <nav className="navbar pure-menu pure-menu-horizontal">
-//           <a href="#" className="pure-menu-heading pure-menu-link">Buy my ICO</a>
-//         </nav>
-
-//         <main className="container">
-//           <div className="pure-g">
-//             <div className="pure-u-1-1">
-//               <h1>Disclaimers</h1>
-//               <p>Guaranteed 10x return!</p>
-//               <p>don't participate in the ico if ur a US individual</p>
-//               <p>insert some generic disclaimers here</p>
-//               {this.state.saleInstance ? (
-//                 <div>
-//                   <h2>Version Info</h2>
-//                   <p>You are on <strong>{this.state.networkID === 1 ? "mainnet" : "testnet"}</strong>
-//                     {" "}({this.state.networkID}).</p>
-//                   <p>Token address: <strong>{this.state.tokenInstance.address}</strong></p>
-//                   <p>Sale address: <strong>{this.state.saleInstance.address}</strong></p>
-//                   <p>Your address: <strong>{this.state.account}</strong></p>
-//                 </div>
-//               ) : <p>web3 is loading!</p>}
-//             </div>
-//             <hr />
-//             {this.state.saleInstance ? (
-//               <div className="pure-u-1-1">
-//                 <h1>{this.state.tokenInfo.name} ({this.state.tokenInfo.symbol}) Tokensale</h1>
-//                 <p>Total Supply: {this.state.tokenInfo.totalSupply
-//                   .dividedBy(Math.pow(10, this.state.tokenInfo.decimals))
-//                   .toString()}
-//                 </p>
-//                 <p>Tokens Left: {this.state.saleInfo.tokensLeft
-//                   .dividedBy(Math.pow(10, this.state.tokenInfo.decimals))
-//                   .toString()}
-//                 </p>
-//                 <p>Start Time: {this.state.saleInfo.saleStartTime.toLocaleString()}</p>
-//                 <p>End Time: {this.state.saleInfo.saleEndTime.toLocaleString()}</p>
-//                 <p>Sale Price: {new bn(1)
-//                   .dividedBy(this.state.web3.fromWei(this.state.saleInfo.salePrice))
-//                   .dividedBy(Math.pow(10, this.state.tokenInfo.decimals)).toString()}
-//                   {`${this.state.tokenInfo.symbol} / ETH`}</p>
-//                 <h2>buy the shit now and get rich</h2>
-//                 <div>
-//                   <label>
-//                     I'm investing
-//                     <input onChange={(e) => {
-//                       this.setState({ investEth: e.target.value })
-//                     }} /> ETH
-//                   </label>
-//                   <p>
-//                     {isNaN(this.state.investEth) || !this.state.investEth ? "Enter a number!"
-//                       :
-//                       `This will get you ${new bn(this.state.web3.toWei(this.state.investEth))
-//                         .dividedBy(this.state.saleInfo.salePrice)
-//                         .dividedBy(Math.pow(10, this.state.tokenInfo.decimals))}
-//                         ${this.state.tokenInfo.symbol}`}
-//                   </p>
-//                   <button onClick={this.handleBuyClick}>buy the ico</button>
-//                 </div>
-//               </div>
-//             ) : null}
-//             {this.state.account && this.state.account === this.state.tokenInfo.tokenSeller ? (
-//               <div className="pure-u-1-1">
-//                 <h1>Seller controls</h1>
-//                 <p>Balance of the tokensale contract: {this.state.web3
-//                   .fromWei(this.state.saleInfo.balance).toString()} ETH</p>
-//                 <button onClick={this.handleCashoutClick}>Cash out!</button>
-//               </div>
-//             ) : null}
-//           </div>
-//         </main>
-//       </div>
-//     );
-//   }
-// }
 
 export default App;
